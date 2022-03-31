@@ -1,0 +1,181 @@
+---
+title: "DATA MANIPULATION IN R"
+author: "BASIT et JANET"
+date: "3/30/2022"
+output:
+  html_document:
+    ---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# DATASET: OrchardSprays
+## MANIPULATING DATA
+
+
+OrchardSprays {datasets}	R Documentation
+Potency of Orchard Sprays
+Description
+An experiment was conducted to assess the potency of various constituents of orchard sprays in repelling honeybees, using a Latin square design.
+
+A data frame with 64 observations on 4 variables.
+
+[,1]	rowpos	numeric	Row of the design
+[,2]	colpos	numeric	Column of the design
+[,3]	treatment	factor	Treatment level
+[,4]	decrease	numeric	Response
+Details
+Individual cells of dry comb were filled with measured amounts of lime sulphur emulsion in sucrose solution. Seven different concentrations of lime sulphur ranging from a concentration of 1/100 to 1/1,562,500 in successive factors of 1/5 were used as well as a solution containing no lime sulphur.
+
+The responses for the different solutions were obtained by releasing 100 bees into the chamber for two hours, and then measuring the decrease in volume of the solutions in the various cells.
+
+An 8 x 8 Latin square design was used and the treatments were coded as follows:
+
+A	highest level of lime sulphur
+B	next highest level of lime sulphur
+.	
+.	
+.	
+G	lowest level of lime sulphur
+H	no lime sulphur
+
+###Data Manipulation on OrchardSprays Dataset
+```{r OrchardSprays}
+library(dplyr)
+library(knitr)
+data("OrchardSprays")
+head(OrchardSprays)
+attach(OrchardSprays)
+```
+
+
+```{r echo=TRUE}
+###### Filter Treatment level
+filt1 = filter(OrchardSprays, treatment == "A")
+print(filt1)
+```
+```{r}
+filt2 = filter(OrchardSprays, treatment == "B")
+print(filt2)
+```
+```{r}
+### Filter Response greater than 100
+filt3 = filter(OrchardSprays, decrease > 100)
+print(filt3)
+```
+```{r}
+#### Filter Response less than 100
+filt4 = filter(OrchardSprays, decrease < 100)
+head(filt4)
+```
+
+```{r}
+#### Filter Row of the design
+filt5 = filter(OrchardSprays, rowpos == 2)
+print(filt5)
+```
+
+```{r}
+#### Filter Column of the design
+filt6 = filter(OrchardSprays, colpos == 4)
+print(filt6)
+```
+
+```{r}
+#### Arrange in Descending Order
+Arr = arrange(OrchardSprays, desc(decrease))
+head(Arr)
+```
+
+```{r}
+#### Select treatment and decrease from OrchardSprays
+TrD = select(OrchardSprays, treatment, decrease)
+head(TrD)
+```
+
+```{r}
+#### Mutation
+Sum = mutate(OrchardSprays, total = sum(decrease))
+head(Sum)
+```
+```{r}
+Aver = mutate(OrchardSprays, mean = sum(decrease)/64)
+head(Aver)
+```
+
+```{r}
+Orc = OrchardSprays %>%
+  mutate(ratio = (decrease/sum(decrease)),
+         Perc = ratio*100)
+head(Orc)
+```
+```{r}
+##### Summarization
+Orch = OrchardSprays %>%
+  select(decrease,treatment)%>%
+  filter(decrease>50)%>%
+  summarise(ave = mean(decrease))
+print(Orch)
+```
+
+```{r, echo=TRUE}
+#### The percentage of soluton obtained by releasing 100 bees into the chamber for 2hours
+grouping = OrchardSprays %>%
+  group_by(decrease) %>%
+  summarise(total = sum(decrease),
+            AVE = mean(decrease),
+            perc = decrease [64]/sum(decrease, na.rm = TRUE)*100)
+print(grouping)
+```
+
+
+###DATA VISUALIZATION WITH GGPLOT2 PACKAGE
+####Making a boxplot of data
+#####HISTOGRAM
+
+```{r HISTOGRAM, echo=FALSE}
+library(ggplot2)
+ggplot(data=OrchardSprays,aes(x=decrease))+
+  geom_freqpoly()+
+  theme_grey()+
+  labs(title="OrchardSprays", subtitle="Decrease", x="30")
+  hist(decrease,col="cyan")
+```
+
+##BOXPLOT
+```{r}
+Spray=ggplot(OrchardSprays,aes(factor(rowpos),decrease))+
+geom_boxplot()+
+ylab("decrease") + 
+xlab("rowpos")
+Spray
+
+####BOXPLOT
+boxplot(decrease~rowpos+colpos,data=OrchardSprays)
+```
+
+###Running Anova
+```{r}
+mydata=data.frame(decrease,rowpos, colpos, treatment)
+mydata
+myfit=lm(decrease~ rowpos+treatment+colpos, mydata)
+anova(myfit)
+a=plot(decrease~ rowpos+treatment+colpos, mydata)
+
+a
+```
+
+###BAR CHART
+```{r}
+ggplot(data=OrchardSprays,aes(x=decrease))+
+  geom_bar()+
+  theme_classic()
+
+###BAR PLOT
+barplot(decrease~rowpos+colpos,data=OrchardSprays)
+```
+
+
+
+
+
